@@ -17,8 +17,7 @@
     "lint": "deno lint",
     "check": "deno check **/*.ts",
     "build": "deno compile --allow-net --allow-env --allow-read -o dist/z-ai2api-deno main.ts"
-  }
-},
+  },
   "compilerOptions": {
     "allowJs": true,
     "lib": ["deno.window"],
