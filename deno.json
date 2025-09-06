@@ -1,4 +1,4 @@
-- name: Write correct deno.json
+- name: Write complete deno.json
   run: |
     cat > deno.json <<'EOF'
     {
@@ -41,5 +41,8 @@
     }
     EOF
 
-- name: Build
+- name: Show deno.json after fix
+  run: cat deno.json
+
+- name: Build step
   run: deno task build
