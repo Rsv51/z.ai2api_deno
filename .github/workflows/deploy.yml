@@ -1,18 +1,17 @@
 name: Deploy
 on:
   push:
-    branches: main
+    branches: [main]
   pull_request:
-    branches: main
+    branches: [main]
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-
     permissions:
-      id-token: write # Needed for auth with Deno Deploy
-      contents: read # Needed to clone the repository
+      id-token: write
+      contents: read
 
     steps:
       - name: Clone repository
@@ -23,14 +22,26 @@ jobs:
         with:
           deno-version: v2.x
 
+      # 1. 确保 deno.json 包含 build 任务 & exports 字段
+      - name: Fix deno.json
+        run: |
+          jq '.exports = "./main.ts" | .tasks.build = "deno compile --allow-net --allow-env --allow-read -o dist/z-ai2api-deno main.ts"' \
+             deno.json > tmp.json && mv tmp.json deno.json
+
       - name: Build step
-        run: "deno task build"
+        run: deno task build
+
+      # 2. 上传构建产物（可选，Deno Deploy 只认 entrypoint，不需要 dist）
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary
+          path: dist/z-ai2api-deno
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
           project: "rsv51-zai2api-den-42"
           entrypoint: "main.ts"
-          root: "./home/runner/work/z.ai2api_deno/z.ai2api_deno/ "
-          
-          
+          # 3. 正确 root 路径就是仓库根目录（默认值，直接删也行）
+          root: "."
